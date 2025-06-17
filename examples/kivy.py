@@ -31,8 +31,10 @@ BoxLayout:
 
     MaterialShape:
         id: shape
-        image:"/home/tdynamos/Downloads/morefun_boy-PXhgc2wKsVI-unsplash.jpg"
-        shape: 'heart'
+        # Photo by Prince Akachi on Unsplash
+        # https://unsplash.com/photos/woman-smiling-beside-red-wall-LWkFHEGpleE
+        image:"./examples/test_img.jpg"
+        shape: 'circle'
         fill_color: [1,1,1,1]
         size_hint_y: 0.35
         padding:dp(30)

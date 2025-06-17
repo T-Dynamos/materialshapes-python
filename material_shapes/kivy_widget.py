@@ -7,18 +7,19 @@ from kivy.animation import Animation, AnimationTransition
 from kivy.clock import Clock
 from kivy.graphics import Rectangle
 from kivy.graphics.texture import Texture
-from kivy.properties import ColorProperty, ListProperty, NumericProperty, StringProperty
-from kivy.uix.widget import Widget
+from kivy.properties import ColorProperty, ListProperty, NumericProperty, StringProperty, ObjectProperty
+from kivy.uix.image import Image as KIVYImage
 from kivy.metrics import dp
+from kivy.lang import Builder
 
-from material_shapes.material_shapes import MaterialShapes
+from material_shapes import MaterialShapes
 from material_shapes.morph import Morph
 from material_shapes.utils import path_from_morph, path_from_rounded_polygon
 
 from PIL import Image
 
 
-class MaterialShape(Widget):
+class MaterialShape(KIVYImage):
     shape = StringProperty("heart")
     image = StringProperty("")
     fill_color = ColorProperty([0.25, 0.1, 0.4, 1])
@@ -29,17 +30,13 @@ class MaterialShape(Widget):
     stiffness = NumericProperty(6.0)
     
     # internal props
+    material_shapes = MaterialShapes()
     progress = NumericProperty(0)
     angle_progress = NumericProperty(0)
     _rectangle = None
-    material_shapes = MaterialShapes()
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        with self.canvas:
-            self._rectangle = Rectangle(pos=self.pos, size=self.size)
-
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         Clock.schedule_once(lambda dt: self.update_texture())
         self.bind(
             **dict.fromkeys(
@@ -54,7 +51,6 @@ class MaterialShape(Widget):
                 self.update_texture,
             )
         )
-        self.bind(pos=lambda *args: setattr(self._rectangle, "pos", self.pos))
         self.bind(size=self.delayed_texture_update)
         AnimationTransition.spring = self.spring
         AnimationTransition.rotate_decelerated = self.rotate_decelerated
@@ -80,7 +76,7 @@ class MaterialShape(Widget):
         ctx.set_source_rgba(*self.bg_color)
         ctx.paint()
         ctx.translate(center_x - shape_size // 2, center_y - shape_size // 2)
-
+        
         if os.path.exists(self.image):
             ctx.set_source(self.get_img_pattern(shape_size))
         else:
@@ -99,9 +95,7 @@ class MaterialShape(Widget):
         tex.blit_buffer(bytes(buf), colorfmt="bgra", bufferfmt="ubyte")
         tex.flip_vertical()
 
-        self._rectangle.texture = tex
-        self._rectangle.pos = self.pos
-        self._rectangle.size = self.size
+        self.texture = tex
 
     _image_cache = {}
 
@@ -150,7 +144,7 @@ class MaterialShape(Widget):
             path_from_rounded_polygon(ctx, shape)
 
     def rotate_decelerated(self, progress: float) -> float:
-        return 1 - (1 - progress) ** 3
+        return 1 - (1 - progress) ** 4
 
     def spring(self, progress: float) -> float:
         if progress <= 0.0:
@@ -167,9 +161,7 @@ class MaterialShape(Widget):
     _current_morph = None
     _morph_to_icon = None
 
-    def morph_to(self, new_icon: str, d=0.8, rotate=False, t="spring", tr="rotate_decelerated"):
-        if new_icon == self.shape:
-            return
+    def morph_to(self, new_icon: str, d=1, rotate=True, t="spring", tr="rotate_decelerated"):
         
         Animation.cancel_all(self)
 
@@ -187,11 +179,9 @@ class MaterialShape(Widget):
         anim.start(self)
         if rotate:
             Animation(angle_progress=1, d=d, t=tr).start(self)
-        
 
     def _on_morph_finished(self, *args):
         self.shape = self._morph_to_icon
         self._current_morph = None
         self.progress = 0
         self.angle_progress = 0
-        self.update_texture()

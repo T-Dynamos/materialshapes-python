@@ -3,35 +3,46 @@ from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import StringProperty
 from material_shapes.kivy_widget import MaterialShape
+from kivy.uix.boxlayout import BoxLayout
+from kivy.metrics import dp
+from kivy.properties import ColorProperty, ObjectProperty
+from kivy.uix.behaviors import ButtonBehavior
+
+class TapShape(ButtonBehavior, MaterialShape):
+    outline_color = ColorProperty([0,0,0,0])
 
 KV = '''
+
+<TapShape>:
+    canvas:
+        Color:
+            rgba:root.outline_color
+        Line:
+            rectangle: (self.x, self.y, self.width, self.height)
+
 BoxLayout:
     orientation: 'vertical'
-    
+
+    GridLayout:
+        cols:5
+        id:grid
+        spacing:dp(5)
+        size_hint_y:0.6
+
     MaterialShape:
         id: shape
-        image:"matthew-stephenson-Tn9BuH_vvuc-unsplash.jpg"
-        shape: 'circle'
-        fill_color: 0.9, 0.3, 0.5, 1
-        size_hint:1, 0.9
-        padding:dp(30)
- 
+        image:"/home/tdynamos/Downloads/morefun_boy-PXhgc2wKsVI-unsplash.jpg"
+        shape: 'heart'
+        fill_color: [1,1,1,1]
+        size_hint_y: 0.35
+        padding:dp(0)
+    
     Label:
         id: shape_label
         text: app.current_shape_name
-        size_hint_y: 0.1
+        size_hint_y:0.05
         font_size: '20sp'
         halign:"center"
-        bold: True
-    
-    BoxLayout:
-        size_hint_y: 0.1
-        Button:
-            text: 'Prev'
-            on_release: app.prev_shape()
-        Button:
-            text: 'Next'
-            on_release: app.next_shape()
 '''
 
 class TestApp(App):
@@ -43,25 +54,33 @@ class TestApp(App):
     def on_start(self):
         shape_widget = self.root.ids.shape
         self.shape_names = list(shape_widget.material_shapes.all.keys())
-        self.current_index = self.shape_names.index(shape_widget.shape)
-        self.update_label()
+        self.update_label(self.shape_names.index(shape_widget.shape))
+        
+        for _ in range(0, len(self.shape_names)):
 
-    def morph_to_index(self, index):
-        shape_widget = self.root.ids.shape
-        self.current_index = index % len(self.shape_names)
-        next_shape = self.shape_names[self.current_index]
-        shape_widget.morph_to(next_shape)
-        self.update_label()
+            wid = TapShape()
+            wid.shape = self.shape_names[_]
+            wid.padding = dp(3)
+            wid.fill_color = [1,1,1,1]
+            
+            if wid.shape == shape_widget.shape:
+                wid.outline_color = [1,0,0,1]
+            else:
+                wid.outline_color = [0,0,0,0]
 
-    def update_label(self):
-        self.current_shape_name = self.shape_names[self.current_index]
+            wid.on_release = lambda *args, _=_, wid=wid: self.morph_to(_, wid)
+            self.root.ids.grid.add_widget(wid)
+    
+    def morph_to(self, index, wid):
+        self.root.ids.shape.morph_to(wid.shape)
+        
+        for widget in self.root.ids.grid.children:
+            widget.outline_color = [0,0,0,0]
+        
+        wid.outline_color = [1, 0, 0, 1]
+        self.update_label(index)
 
-    def next_shape(self):
-        self.morph_to_index(self.current_index + 1)
-
-    def prev_shape(self):
-        self.morph_to_index(self.current_index - 1)
+    def update_label(self, index):
+        self.current_shape_name = self.shape_names[index]
  
-if __name__ == '__main__':
-    TestApp().run()
-
+TestApp().run()

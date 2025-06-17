@@ -9,10 +9,13 @@ from kivy.graphics import Rectangle
 from kivy.graphics.texture import Texture
 from kivy.properties import ColorProperty, ListProperty, NumericProperty, StringProperty
 from kivy.uix.widget import Widget
+from kivy.metrics import dp
 
 from shapes.material_shapes import MaterialShapes
 from shapes.morph import Morph
 from shapes.utils import path_from_morph, path_from_rounded_polygon
+
+from PIL import Image
 
 
 def spring(progress: float, damping: float = 0.4, stiffness: float = 6.0) -> float:
@@ -31,98 +34,137 @@ def spring(progress: float, damping: float = 0.4, stiffness: float = 6.0) -> flo
 AnimationTransition.spring = staticmethod(spring)
 
 
-class MaterialIcon(Widget):
-    icon = StringProperty("triangle")
+class MaterialShape(Widget):
+    shape = StringProperty("heart")
+    image = StringProperty("")
     fill_color = ColorProperty([0.25, 0.1, 0.4, 1])
     bg_color = ColorProperty([0, 0, 0, 0])
-    padding = ListProperty([4, 4, 4, 4])
+    padding = NumericProperty(dp(10))
+    
+    # internal props
     progress = NumericProperty(0)
+    _rectangle = None
+    material_shapes = MaterialShapes()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.material_shapes = MaterialShapes()
-        self._rectangle = None
+
+        with self.canvas:
+            self._rectangle = Rectangle(pos=self.pos, size=self.size)
 
         Clock.schedule_once(lambda dt: self.update_texture())
-
         self.bind(
-            pos=self.update_texture,
-            size=self.update_texture,
-            icon=self.update_texture,
-            fill_color=self.update_texture,
-            bg_color=self.update_texture,
-            padding=self.update_texture,
-            progress=self.update_texture,
+            **dict.fromkeys(
+                [
+                    "shape",
+                    "fill_color",
+                    "bg_color",
+                    "padding",
+                    "progress",
+                    "image",
+                ],
+                self.update_texture,
+            )
         )
+        self.bind(pos=lambda *args: setattr(self._rectangle, "pos", self.pos))
+        self.bind(size=self.delayed_texture_update)
+
+    _d_event = None
+
+    def delayed_texture_update(self, *args):
+        # resizing image is expensive
+        if self._d_event:
+            self._d_event.cancel()
+            self._d_event = None
+        self._d_event = Clock.schedule_once(self.update_texture, 0.1)
 
     def update_texture(self, *args):
-        w, h = map(int, self.size)
-        pad_left, pad_top, pad_right, pad_bottom = self.padding
+        w, h = int(self.width), int(self.height)
+        center_x, center_y = w // 2, h // 2
 
-        usable_width = w - pad_left - pad_right
-        usable_height = h - pad_top - pad_bottom
-
-        if usable_width <= 0 or usable_height <= 0:
-            return
+        shape_size = min(w, h)
+        shape_size -= int(self.padding) * 2
 
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, w, h)
         ctx = cairo.Context(surface)
-
-        # Background color
         ctx.set_source_rgba(*self.bg_color)
         ctx.paint()
+        ctx.translate(center_x - shape_size // 2, center_y - shape_size // 2)
 
-        # Shape transformation
+        if os.path.exists(self.image):
+            ctx.set_source(self.get_img_pattern(shape_size))
+        else:
+            ctx.set_source_rgba(*self.fill_color)
 
-        sx = usable_width
-        sy = usable_height
-        scale_factor = min(sx, sy)
+        ctx.scale(*[shape_size] * 2)
+        self._get_shape_path(ctx)
+        ctx.fill()
 
-        offset_x = (usable_width - scale_factor) / 2 + pad_left
-        offset_y = (usable_height - scale_factor) / 2 + pad_top
+        buf = surface.get_data()
+        tex = Texture.create(size=self.size, colorfmt="bgra")
+        tex.blit_buffer(bytes(buf), colorfmt="bgra", bufferfmt="ubyte")
+        tex.flip_vertical()
 
-        ctx.translate(offset_x, offset_y)
-        ctx.scale(scale_factor, scale_factor)
+        self._rectangle.texture = tex
+        self._rectangle.pos = self.pos
+        self._rectangle.size = self.size
 
+    _image_cache = {}
+
+    def get_img_pattern(self, shape_size):
+        img_key = f"{self.image}_{shape_size}"
+        if not (pattern := self._image_cache.get(img_key)):
+            im = self._crop_center_square_resize(self.image, shape_size)
+            pattern = self._image_cache[img_key] = cairo.SurfacePattern(
+                self._from_pil(im)
+            )
+        return pattern
+
+    _pil_cache = {}
+
+    def _crop_center_square_resize(self, path, new_size):
+        img = self._pil_cache.get(path)
+        if img is None:
+            img = self._pil_cache[path] = Image.open(path)
+
+        min_dim = min(img.size)
+        x = (img.width - min_dim) // 2
+        y = (img.height - min_dim) // 2
+        box = (x, y, x + min_dim, y + min_dim)
+        return img.crop(box).resize((new_size, new_size), Image.LANCZOS)
+
+    def _from_pil(
+        self,
+        im: Image.Image,
+        alpha: float = 1.0,
+        format: cairo.Format = cairo.FORMAT_ARGB32,
+    ):
+        if "A" not in im.getbands():
+            im.putalpha(int(alpha * 255))
+        arr = bytearray(im.tobytes("raw", "BGRa"))
+        return cairo.ImageSurface.create_for_data(arr, format, im.width, im.height)
+
+    def _get_shape_path(self, ctx):
         if self._current_morph:
             path_from_morph(
                 ctx,
                 self._current_morph,
                 self.progress,
-                rotation_pivot_x=3.14 / 2,
-                rotation_pivot_y=0,
-                start_angle=3.14,
             )
         else:
-            path_from_rounded_polygon(ctx, self.material_shapes.all.get(self.icon))
-
-        ctx.set_source_rgba(*self.fill_color)
-        ctx.fill()
-
-        # Convert to Kivy texture
-        buf = surface.get_data()
-        tex = Texture.create(size=(w, h), colorfmt="rgba")
-        tex.blit_buffer(bytes(buf), colorfmt="rgba", bufferfmt="ubyte")
-        tex.flip_vertical()
-
-        if not self._rectangle:
-            with self.canvas:
-                self._rectangle = Rectangle(texture=tex, pos=self.pos, size=self.size)
-        else:
-            self._rectangle.texture = tex
-            self._rectangle.pos = self.pos
-            self._rectangle.size = self.size
+            shape = self.material_shapes.all.get(self.shape)
+            path_from_rounded_polygon(ctx, shape)
 
     _current_morph = None
     _morph_to_icon = None
 
     def morph_to(self, new_icon: str, duration=0.4):
-        if new_icon == self.icon:
+        if new_icon == self.shape or self.progress != 0:
             return
 
         self._morph_to_icon = new_icon
 
-        start_shape = self.material_shapes.all.get(self.icon)
+        start_shape = self.material_shapes.all.get(self.shape)
         end_shape = self.material_shapes.all.get(new_icon)
 
         self._current_morph = Morph(start_shape, end_shape)
@@ -133,7 +175,7 @@ class MaterialIcon(Widget):
         anim.start(self)
 
     def _on_morph_finished(self, *args):
-        self.icon = self._morph_to_icon
+        self.shape = self._morph_to_icon
         self._current_morph = None
         self.progress = 0.0
         self.update_texture()

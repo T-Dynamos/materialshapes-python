@@ -1,12 +1,6 @@
 # materialshapes-python
 ## STILL IN DEVLOPMENT
 
-
-https://github.com/user-attachments/assets/bd3c7a55-40c1-4ab0-9954-5b4f27a1c7a8
-
-
-
-
 <h2 align="center">Preview</h2>
 
 <table align="center">
@@ -68,3 +62,30 @@ Generated using:
 ```bash
 python3 image_gen.py
 ```
+
+
+## Examples
+
+File: `loading_indicator.py`
+
+Run using:
+```
+python3 -m examples.loading_indicator
+```
+
+
+https://github.com/user-attachments/assets/c52553f1-c4f0-4af1-8360-f72acfd78949
+
+
+File: `kivy.py`
+
+Run using:
+```
+python3 -m examples.kivy
+```
+
+
+
+https://github.com/user-attachments/assets/31c2ae03-9be8-4a34-b95d-b7e7219773b1
+
+

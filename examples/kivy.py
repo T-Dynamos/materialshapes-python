@@ -22,7 +22,7 @@ KV = '''
 
 BoxLayout:
     orientation: 'vertical'
-
+    padding:dp(20)
     GridLayout:
         cols:5
         id:grid

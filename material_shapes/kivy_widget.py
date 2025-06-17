@@ -65,8 +65,11 @@ class MaterialShape(KIVYImage):
         if self._d_event:
             self._d_event.cancel()
             self._d_event = None
-        self._d_event = Clock.schedule_once(self.update_texture, 0.1)
-    
+        if os.path.exists(self.image):
+            self._d_event = Clock.schedule_once(self.update_texture, 0.1)
+        else:
+            self.update_texture()
+
     def update_texture(self, *args):
         w, h = int(self.width), int(self.height)
         center_x, center_y = w // 2, h // 2

@@ -31,13 +31,12 @@ class MaterialShape(KIVYImage):
     bg_color = ColorProperty([0, 0, 0, 0])
     padding = NumericProperty(dp(10))
 
-    damping = NumericProperty(0.4)
-    stiffness = NumericProperty(6.0)
+    damping = NumericProperty(0.25)
+    stiffness = NumericProperty(6)
 
     # internal props
     material_shapes = MaterialShapes()
     progress = NumericProperty(0)
-    angle_progress = NumericProperty(0)
     _rectangle = None
 
     def __init__(self, *args, **kwargs):
@@ -58,7 +57,6 @@ class MaterialShape(KIVYImage):
         )
         self.bind(size=self.delayed_texture_update)
         AnimationTransition.spring = self.spring
-        AnimationTransition.rotate_decelerated = self.rotate_decelerated
 
     _d_event = None
 
@@ -68,7 +66,7 @@ class MaterialShape(KIVYImage):
             self._d_event.cancel()
             self._d_event = None
         self._d_event = Clock.schedule_once(self.update_texture, 0.1)
-
+    
     def update_texture(self, *args):
         w, h = int(self.width), int(self.height)
         center_x, center_y = w // 2, h // 2
@@ -85,10 +83,6 @@ class MaterialShape(KIVYImage):
             ctx.set_source(self.get_img_pattern(shape_size))
         else:
             ctx.set_source_rgba(*self.fill_color)
-
-        ctx.translate(shape_size // 2, shape_size // 2)
-        ctx.rotate(pi * 2 * self.angle_progress)
-        ctx.translate(-shape_size // 2, -shape_size // 2)
 
         ctx.scale(*[shape_size] * 2)
         self._get_shape_path(ctx)
@@ -147,8 +141,8 @@ class MaterialShape(KIVYImage):
             shape = self.material_shapes.all.get(self.shape)
             path_from_rounded_polygon(ctx, shape)
 
-    def rotate_decelerated(self, progress: float) -> float:
-        return 1 - (1 - progress) ** 4
+    def s_rotate(self, progress: float) -> float:
+        return progress 
 
     def spring(self, progress: float) -> float:
         if progress <= 0.0:
@@ -164,11 +158,12 @@ class MaterialShape(KIVYImage):
 
     _current_morph = None
     _morph_to_icon = None
+    _anim = None
+    def morph_to(self, new_icon: str, d=0.5, t="spring", on_complete=None):
 
-    def morph_to(
-        self, new_icon: str, d=0.5, rotate=False, t="spring", tr="rotate_decelerated"
-    ):
-        Animation.cancel_all(self)
+        if self._anim is not None:
+            self._anim.cancel(self)
+            self._anim = None
 
         self._morph_to_icon = new_icon
         start_shape = self.material_shapes.all.get(self.shape)
@@ -176,16 +171,14 @@ class MaterialShape(KIVYImage):
         self._current_morph = Morph(start_shape, end_shape)
 
         self.progress = 0
-        self.angle_progress = 0
 
-        anim = Animation(progress=1, d=d, t="spring")
-        anim.bind(on_complete=self._on_morph_finished)
-        anim.start(self)
-        if rotate:
-            Animation(angle_progress=1, d=d, t=tr).start(self)
+        self._anim = Animation(progress=1, d=d, t="spring")
+        self._anim.bind(on_complete=self._on_morph_finished)
+        if on_complete:
+            self._anim.bind(on_complete=on_complete)
+        self._anim.start(self)
 
     def _on_morph_finished(self, *args):
         self.shape = self._morph_to_icon
         self._current_morph = None
         self.progress = 0
-        self.angle_progress = 0

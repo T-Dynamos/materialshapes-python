@@ -1,7 +1,11 @@
 from typing import List, Tuple
 
 from material_shapes.features import CornerFeature, Feature
-from material_shapes.float_mapping import DoubleMapper, progress_distance, progress_in_range
+from material_shapes.float_mapping import (
+    DoubleMapper,
+    progress_distance,
+    progress_in_range,
+)
 from material_shapes.point import Point
 from material_shapes.utils import binary_search_by, distance_epsilon
 

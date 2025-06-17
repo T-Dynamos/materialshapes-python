@@ -7,16 +7,21 @@ from kivy.animation import Animation, AnimationTransition
 from kivy.clock import Clock
 from kivy.graphics import Rectangle
 from kivy.graphics.texture import Texture
-from kivy.properties import ColorProperty, ListProperty, NumericProperty, StringProperty, ObjectProperty
-from kivy.uix.image import Image as KIVYImage
-from kivy.metrics import dp
 from kivy.lang import Builder
+from kivy.metrics import dp
+from kivy.properties import (
+    ColorProperty,
+    ListProperty,
+    NumericProperty,
+    ObjectProperty,
+    StringProperty,
+)
+from kivy.uix.image import Image as KIVYImage
+from PIL import Image
 
 from material_shapes import MaterialShapes
 from material_shapes.morph import Morph
 from material_shapes.utils import path_from_morph, path_from_rounded_polygon
-
-from PIL import Image
 
 
 class MaterialShape(KIVYImage):
@@ -28,7 +33,7 @@ class MaterialShape(KIVYImage):
 
     damping = NumericProperty(0.4)
     stiffness = NumericProperty(6.0)
-    
+
     # internal props
     material_shapes = MaterialShapes()
     progress = NumericProperty(0)
@@ -68,21 +73,20 @@ class MaterialShape(KIVYImage):
         w, h = int(self.width), int(self.height)
         center_x, center_y = w // 2, h // 2
 
-        shape_size = min(w, h)
-        shape_size -= int(self.padding) * 2
+        shape_size = min(w, h) - int(self.padding) * 2
 
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, w, h)
         ctx = cairo.Context(surface)
         ctx.set_source_rgba(*self.bg_color)
         ctx.paint()
         ctx.translate(center_x - shape_size // 2, center_y - shape_size // 2)
-        
+
         if os.path.exists(self.image):
             ctx.set_source(self.get_img_pattern(shape_size))
         else:
             ctx.set_source_rgba(*self.fill_color)
 
-        ctx.translate(shape_size//2, shape_size//2)
+        ctx.translate(shape_size // 2, shape_size // 2)
         ctx.rotate(pi * 2 * self.angle_progress)
         ctx.translate(-shape_size // 2, -shape_size // 2)
 
@@ -157,23 +161,23 @@ class MaterialShape(KIVYImage):
         oscillation = cos(omega * progress * (1 - self.damping))
 
         return 1 - (decay * oscillation)
-    
+
     _current_morph = None
     _morph_to_icon = None
 
-    def morph_to(self, new_icon: str, d=1, rotate=True, t="spring", tr="rotate_decelerated"):
-        
+    def morph_to(
+        self, new_icon: str, d=0.5, rotate=False, t="spring", tr="rotate_decelerated"
+    ):
         Animation.cancel_all(self)
 
         self._morph_to_icon = new_icon
-
         start_shape = self.material_shapes.all.get(self.shape)
         end_shape = self.material_shapes.all.get(new_icon)
-
         self._current_morph = Morph(start_shape, end_shape)
+
         self.progress = 0
         self.angle_progress = 0
-        
+
         anim = Animation(progress=1, d=d, t="spring")
         anim.bind(on_complete=self._on_morph_finished)
         anim.start(self)

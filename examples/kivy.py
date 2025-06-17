@@ -35,7 +35,7 @@ BoxLayout:
         shape: 'heart'
         fill_color: [1,1,1,1]
         size_hint_y: 0.35
-        padding:dp(0)
+        padding:dp(30)
     
     Label:
         id: shape_label

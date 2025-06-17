@@ -10,13 +10,12 @@ BoxLayout:
     
     MaterialShape:
         id: shape
-        image:"/home/tdynamos/Downloads/matthew-stephenson-Tn9BuH_vvuc-unsplash.jpg"
-        shape: 'heart'
+        image:"matthew-stephenson-Tn9BuH_vvuc-unsplash.jpg"
+        shape: 'circle'
         fill_color: 0.9, 0.3, 0.5, 1
         size_hint:1, 0.9
         padding:dp(30)
-        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
-    
+ 
     Label:
         id: shape_label
         text: app.current_shape_name

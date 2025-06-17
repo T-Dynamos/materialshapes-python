@@ -30,6 +30,7 @@ class MaterialShape(Widget):
     
     # internal props
     progress = NumericProperty(0)
+    angle_progress = NumericProperty(0)
     _rectangle = None
     material_shapes = MaterialShapes()
 
@@ -56,6 +57,7 @@ class MaterialShape(Widget):
         self.bind(pos=lambda *args: setattr(self._rectangle, "pos", self.pos))
         self.bind(size=self.delayed_texture_update)
         AnimationTransition.spring = self.spring
+        AnimationTransition.rotate_decelerated = self.rotate_decelerated
 
     _d_event = None
 
@@ -83,6 +85,10 @@ class MaterialShape(Widget):
             ctx.set_source(self.get_img_pattern(shape_size))
         else:
             ctx.set_source_rgba(*self.fill_color)
+
+        ctx.translate(shape_size//2, shape_size//2)
+        ctx.rotate(pi * 2 * self.angle_progress)
+        ctx.translate(-shape_size // 2, -shape_size // 2)
 
         ctx.scale(*[shape_size] * 2)
         self._get_shape_path(ctx)
@@ -143,6 +149,9 @@ class MaterialShape(Widget):
             shape = self.material_shapes.all.get(self.shape)
             path_from_rounded_polygon(ctx, shape)
 
+    def rotate_decelerated(self, progress: float) -> float:
+        return 1 - (1 - progress) ** 3
+
     def spring(self, progress: float) -> float:
         if progress <= 0.0:
             return 0.0
@@ -158,9 +167,11 @@ class MaterialShape(Widget):
     _current_morph = None
     _morph_to_icon = None
 
-    def morph_to(self, new_icon: str, d=0.4, t="spring"):
-        if new_icon == self.shape or self.progress != 0:
+    def morph_to(self, new_icon: str, d=0.8, rotate=False, t="spring", tr="rotate_decelerated"):
+        if new_icon == self.shape:
             return
+        
+        Animation.cancel_all(self)
 
         self._morph_to_icon = new_icon
 
@@ -168,14 +179,19 @@ class MaterialShape(Widget):
         end_shape = self.material_shapes.all.get(new_icon)
 
         self._current_morph = Morph(start_shape, end_shape)
-        self.progress = 0.0
+        self.progress = 0
+        self.angle_progress = 0
         
         anim = Animation(progress=1, d=d, t="spring")
         anim.bind(on_complete=self._on_morph_finished)
         anim.start(self)
+        if rotate:
+            Animation(angle_progress=1, d=d, t=tr).start(self)
+        
 
     def _on_morph_finished(self, *args):
         self.shape = self._morph_to_icon
         self._current_morph = None
-        self.progress = 0.0
+        self.progress = 0
+        self.angle_progress = 0
         self.update_texture()

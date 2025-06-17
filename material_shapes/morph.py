@@ -1,8 +1,8 @@
-from shapes.cubic import Cubic
-from shapes.feature_mapping import feature_mapper
-from shapes.point import lerp
-from shapes.polygon_measure import LengthMeasurer, MeasuredPolygon
-from shapes.utils import angle_epsilon, positive_modulo
+from material_shapes.cubic import Cubic
+from material_shapes.feature_mapping import feature_mapper
+from material_shapes.point import lerp
+from material_shapes.polygon_measure import LengthMeasurer, MeasuredPolygon
+from material_shapes.utils import angle_epsilon, positive_modulo
 
 
 class Morph:

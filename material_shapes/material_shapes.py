@@ -3,10 +3,10 @@ from dataclasses import dataclass
 from types import SimpleNamespace
 from typing import List
 
-from shapes.corner_rounding import CornerRounding
-from shapes.point import Point
-from shapes.rounded_polygon import RoundedPolygon
-from shapes.utils import Matrix4
+from material_shapes.corner_rounding import CornerRounding
+from material_shapes.point import Point
+from material_shapes.rounded_polygon import RoundedPolygon
+from material_shapes.utils import Matrix4
 
 
 @dataclass(frozen=True)

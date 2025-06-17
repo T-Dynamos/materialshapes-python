@@ -1,11 +1,11 @@
 import math
 from typing import List, Optional
 
-from shapes.corner_rounding import CornerRounding
-from shapes.cubic import Cubic
-from shapes.features import CornerFeature, EdgeFeature, Feature
-from shapes.point import Point, interpolate, lerp
-from shapes.utils import (
+from material_shapes.corner_rounding import CornerRounding
+from material_shapes.cubic import Cubic
+from material_shapes.features import CornerFeature, EdgeFeature, Feature
+from material_shapes.point import Point, interpolate, lerp
+from material_shapes.utils import (
     convex,
     direction_vector,
     distance,

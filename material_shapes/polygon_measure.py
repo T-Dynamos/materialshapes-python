@@ -1,11 +1,11 @@
 from typing import List, Optional, Tuple
 
-from shapes.cubic import Cubic
-from shapes.feature_mapping import ProgressableFeature
-from shapes.features import CornerFeature, Feature
-from shapes.point import Point
-from shapes.rounded_polygon import RoundedPolygon
-from shapes.utils import distance_epsilon, positive_modulo
+from material_shapes.cubic import Cubic
+from material_shapes.feature_mapping import ProgressableFeature
+from material_shapes.features import CornerFeature, Feature
+from material_shapes.point import Point
+from material_shapes.rounded_polygon import RoundedPolygon
+from material_shapes.utils import distance_epsilon, positive_modulo
 
 
 class Measurer:

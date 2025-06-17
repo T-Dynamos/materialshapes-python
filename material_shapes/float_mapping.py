@@ -1,4 +1,4 @@
-from shapes.utils import distance_epsilon
+from material_shapes.utils import distance_epsilon
 
 
 def progress_in_range(

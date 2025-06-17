@@ -11,27 +11,11 @@ from kivy.properties import ColorProperty, ListProperty, NumericProperty, String
 from kivy.uix.widget import Widget
 from kivy.metrics import dp
 
-from shapes.material_shapes import MaterialShapes
-from shapes.morph import Morph
-from shapes.utils import path_from_morph, path_from_rounded_polygon
+from material_shapes.material_shapes import MaterialShapes
+from material_shapes.morph import Morph
+from material_shapes.utils import path_from_morph, path_from_rounded_polygon
 
 from PIL import Image
-
-
-def spring(progress: float, damping: float = 0.4, stiffness: float = 6.0) -> float:
-    if progress <= 0.0:
-        return 0.0
-    if progress >= 1.0:
-        return 1.0
-
-    omega = stiffness * pi  # angular frequency
-    decay = exp(-damping * omega * progress)
-    oscillation = cos(omega * progress * (1 - damping))
-
-    return 1 - (decay * oscillation)
-
-
-AnimationTransition.spring = staticmethod(spring)
 
 
 class MaterialShape(Widget):
@@ -40,6 +24,9 @@ class MaterialShape(Widget):
     fill_color = ColorProperty([0.25, 0.1, 0.4, 1])
     bg_color = ColorProperty([0, 0, 0, 0])
     padding = NumericProperty(dp(10))
+
+    damping = NumericProperty(0.4)
+    stiffness = NumericProperty(6.0)
     
     # internal props
     progress = NumericProperty(0)
@@ -68,6 +55,7 @@ class MaterialShape(Widget):
         )
         self.bind(pos=lambda *args: setattr(self._rectangle, "pos", self.pos))
         self.bind(size=self.delayed_texture_update)
+        AnimationTransition.spring = self.spring
 
     _d_event = None
 
@@ -155,10 +143,22 @@ class MaterialShape(Widget):
             shape = self.material_shapes.all.get(self.shape)
             path_from_rounded_polygon(ctx, shape)
 
+    def spring(self, progress: float) -> float:
+        if progress <= 0.0:
+            return 0.0
+        if progress >= 1.0:
+            return 1.0
+
+        omega = self.stiffness * pi
+        decay = exp(-self.damping * omega * progress)
+        oscillation = cos(omega * progress * (1 - self.damping))
+
+        return 1 - (decay * oscillation)
+    
     _current_morph = None
     _morph_to_icon = None
 
-    def morph_to(self, new_icon: str, duration=0.4):
+    def morph_to(self, new_icon: str, d=0.4, t="spring"):
         if new_icon == self.shape or self.progress != 0:
             return
 
@@ -169,8 +169,8 @@ class MaterialShape(Widget):
 
         self._current_morph = Morph(start_shape, end_shape)
         self.progress = 0.0
-
-        anim = Animation(progress=1, d=duration, t="spring")
+        
+        anim = Animation(progress=1, d=d, t="spring")
         anim.bind(on_complete=self._on_morph_finished)
         anim.start(self)
 

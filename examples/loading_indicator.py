@@ -10,7 +10,6 @@ from kivy.utils import get_color_from_hex
 
 class RotatingShape(MaterialShape):
     rotation_angle = NumericProperty(0)
-    morph_factor = NumericProperty(0)
 
 KV = '''
 #: import get_color_from_hex kivy.utils.get_color_from_hex

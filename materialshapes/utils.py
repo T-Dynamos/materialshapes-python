@@ -3,7 +3,7 @@ from typing import Callable, List
 
 import cairo
 
-from material_shapes.point import Point
+from materialshapes.point import Point
 
 distance_epsilon = 1e-5
 angle_epsilon = 1e-6

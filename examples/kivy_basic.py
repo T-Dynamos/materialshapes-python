@@ -2,7 +2,7 @@ from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import StringProperty
-from material_shapes.kivy_widget import MaterialShape
+from materialshapes.kivy_widget import MaterialShape
 from kivy.uix.boxlayout import BoxLayout
 from kivy.metrics import dp
 from kivy.properties import ColorProperty, ObjectProperty

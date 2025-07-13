@@ -1,7 +1,7 @@
 import cairo
 import os
-from material_shapes.material_shapes import MaterialShapes
-from material_shapes.utils import path_from_rounded_polygon
+from materialshapes import MaterialShapes
+from materialshapes.utils import path_from_rounded_polygon
 
 os.makedirs("shapes_png", exist_ok=True)
 

@@ -1,5 +1,5 @@
 [project]
-name = "materialshapes-python"
+name = "materialshapes"
 version = "0.1"
 description = "Material shapes in pure python."
 authors = [

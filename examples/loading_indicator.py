@@ -4,7 +4,7 @@ from kivy.clock import Clock
 from kivy.animation import Animation
 from kivy.metrics import dp
 from kivy.properties import NumericProperty, ListProperty, ColorProperty
-from material_shapes.kivy_widget import MaterialShape
+from materialshapes.kivy_widget import MaterialShape
 from kivy.utils import get_color_from_hex
 
 

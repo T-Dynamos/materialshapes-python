@@ -19,9 +19,9 @@ from kivy.properties import (
 from kivy.uix.image import Image as KIVYImage
 from PIL import Image
 
-from material_shapes import MaterialShapes
-from material_shapes.morph import Morph
-from material_shapes.utils import path_from_morph, path_from_rounded_polygon
+from materialshapes import MaterialShapes
+from materialshapes.morph import Morph
+from materialshapes.utils import path_from_morph, path_from_rounded_polygon
 
 
 class MaterialShape(KIVYImage):

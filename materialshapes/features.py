@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from material_shapes.utils import distance_epsilon
+from materialshapes.utils import distance_epsilon
 
 
 class Feature(ABC):

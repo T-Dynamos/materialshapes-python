@@ -1,8 +1,8 @@
 import math
 from dataclasses import dataclass
 
-from material_shapes.point import Point, lerp
-from material_shapes.utils import convex, direction_vector, distance, distance_epsilon
+from materialshapes.point import Point, lerp
+from materialshapes.utils import convex, direction_vector, distance, distance_epsilon
 
 
 @dataclass

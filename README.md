@@ -17,6 +17,13 @@ There is no separate documentation yet.
 The examples serve as the documentation and cover all major features.
 Check them out to understand usage and integration.
 
+## Install
+
+You can easily install it from pip by executing:
+```console
+pip3 install materialshapes --upgrade
+```
+
 ## Examples
 
 
@@ -26,8 +33,6 @@ Run using:
 ```
 python3 -m examples.kivy
 ```
-
-
 
 https://github.com/user-attachments/assets/31c2ae03-9be8-4a34-b95d-b7e7219773b1
 

@@ -85,15 +85,18 @@ class MaterialShape(KIVYImage):
         if os.path.exists(self.image):
             ctx.set_source(self.get_img_pattern(shape_size))
         else:
-            ctx.set_source_rgba(*self.fill_color)
+            # rgba to bgra
+            rgba = list(self.fill_color)
+            bgra = [rgba[2], rgba[1], rgba[0], rgba[3]]
+            ctx.set_source_rgba(*bgra)
 
         ctx.scale(*[shape_size] * 2)
         self._get_shape_path(ctx)
         ctx.fill()
 
         buf = surface.get_data()
-        tex = Texture.create(size=self.size, colorfmt="bgra")
-        tex.blit_buffer(bytes(buf), colorfmt="bgra", bufferfmt="ubyte")
+        tex = Texture.create(size=self.size, colorfmt="rgba")
+        tex.blit_buffer(bytes(buf), colorfmt="rgba", bufferfmt="ubyte")
         tex.flip_vertical()
 
         self.texture = tex
@@ -130,7 +133,7 @@ class MaterialShape(KIVYImage):
     ):
         if "A" not in im.getbands():
             im.putalpha(int(alpha * 255))
-        arr = bytearray(im.tobytes("raw", "BGRa"))
+        arr = bytearray(im.tobytes("raw", "RGBA"))
         return cairo.ImageSurface.create_for_data(arr, format, im.width, im.height)
 
     def _get_shape_path(self, ctx):

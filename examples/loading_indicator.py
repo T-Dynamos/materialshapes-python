@@ -1,9 +1,14 @@
+from kivy.config import Config
+
+Config.set("graphics", "maxfps", "1000")
+Config.set("graphics", "vsync", "0")
+
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.animation import Animation
 from kivy.metrics import dp
-from kivy.properties import NumericProperty, ListProperty, ColorProperty
+from kivy.properties import NumericProperty, StringProperty
 from materialshapes.kivy_widget import MaterialShape
 from kivy.utils import get_color_from_hex
 
@@ -117,19 +122,38 @@ BoxLayout:
                 text: f"{stiffness_slider.value:.2f}"
                 size_hint_x: None
                 width: dp(40)
+
+        BoxLayout:
+            size_hint_y: None
+            height: dp(34)
+            spacing: dp(10)
+
+            Label:
+                text: "FPS"
+                size_hint_x: None
+                width: dp(60)
+            Label:
+                text: app.fps_text
+                halign: "left"
+                text_size: self.size
 '''
 
 class MorphApp(App):
     shape_sequence = ["cookie12Sided", "pentagon", "pill", "verySunny", "cookie4Sided", "oval", "flower", "softBoom"]
     current_index = 0
     duration = 0.65
+    fps_text = StringProperty("0.0")
 
     def build(self):
         return Builder.load_string(KV)
 
     def on_start(self):
         self.shape_widget = self.root.ids.morph_shape
+        Clock.schedule_interval(self.update_fps, 0.25)
         Clock.schedule_once(self.start_anim_loop, 0.5)
+
+    def update_fps(self, *_):
+        self.fps_text = f"{Clock.get_fps():.1f}"
 
     def start_anim_loop(self, *args):
         self.run_cycle()
@@ -146,4 +170,3 @@ class MorphApp(App):
 
 
 MorphApp().run()
-

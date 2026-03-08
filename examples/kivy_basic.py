@@ -8,10 +8,12 @@ from kivy.metrics import dp
 from kivy.properties import ColorProperty, ObjectProperty
 from kivy.uix.behaviors import ButtonBehavior
 
-class TapShape(ButtonBehavior, MaterialShape):
-    outline_color = ColorProperty([0,0,0,0])
 
-KV = '''
+class TapShape(ButtonBehavior, MaterialShape):
+    outline_color = ColorProperty([0, 0, 0, 0])
+
+
+KV = """
 
 <TapShape>:
     canvas:
@@ -45,7 +47,8 @@ BoxLayout:
         size_hint_y:0.05
         font_size: '20sp'
         halign:"center"
-'''
+"""
+
 
 class TestApp(App):
     current_shape_name = StringProperty("")
@@ -57,32 +60,33 @@ class TestApp(App):
         shape_widget = self.root.ids.shape
         self.shape_names = list(shape_widget.material_shapes.all.keys())
         self.update_label(self.shape_names.index(shape_widget.shape))
-        
+
         for _ in range(0, len(self.shape_names)):
 
             wid = TapShape()
             wid.shape = self.shape_names[_]
             wid.padding = dp(3)
-            wid.fill_color = [1,1,1,1]
-            
+            wid.fill_color = [1, 1, 1, 1]
+
             if wid.shape == shape_widget.shape:
-                wid.outline_color = [1,0,0,1]
+                wid.outline_color = [1, 0, 0, 1]
             else:
-                wid.outline_color = [0,0,0,0]
+                wid.outline_color = [0, 0, 0, 0]
 
             wid.on_release = lambda *args, _=_, wid=wid: self.morph_to(_, wid)
             self.root.ids.grid.add_widget(wid)
-    
+
     def morph_to(self, index, wid):
-        self.root.ids.shape.morph_to(wid.shape)
-        
+        self.root.ids.shape.morph_to(wid.shape, d=1)
+
         for widget in self.root.ids.grid.children:
-            widget.outline_color = [0,0,0,0]
-        
+            widget.outline_color = [0, 0, 0, 0]
+
         wid.outline_color = [1, 0, 0, 1]
         self.update_label(index)
 
     def update_label(self, index):
         self.current_shape_name = self.shape_names[index]
- 
+
+
 TestApp().run()

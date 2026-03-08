@@ -1,8 +1,6 @@
 import math
 from typing import Callable, List
 
-import cairo
-
 from materialshapes.point import Point
 
 distance_epsilon = 1e-5
@@ -154,7 +152,7 @@ def binary_search_by(
 
 
 def path_from_cubics(
-    ctx: cairo.Context,
+    ctx,
     cubics: list,
     start_angle: int,
     repeat_path: bool,
@@ -218,7 +216,7 @@ def path_from_cubics(
 
 
 def path_from_rounded_polygon(
-    ctx: cairo.Context,
+    ctx,
     rounded_polygon,
     start_angle=0,
     repeat_path=False,
@@ -236,7 +234,7 @@ def path_from_rounded_polygon(
 
 
 def path_from_morph(
-    ctx: cairo.Context,
+    ctx,
     morph,
     progress,
     start_angle=0,

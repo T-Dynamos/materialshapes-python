@@ -5,7 +5,15 @@
 
 A complete Python port of the official Material Design 3 shape system from Android. It includes rounded polygon generation, shape morphing, and smooth transitions based on Google's original Java source.
 
-Uses pycairo for 2D graphics rendering. Can be used with Python GUI libraries. A Kivy widget is already included.
+Uses both ThorVG and PyCairo for 2D graphics rendering. Both backends return RGBA bytes of shapes. In ThorVG, it uses a centralized engine with multi-threading to maximize performance. A Kivy widget is already included.
+
+## Rendering Backends
+
+The `materialshapes.renderer` module supports two backends:
+- **ThorVG**: Uses `thorvg-python` bindings.
+- **PyCairo**: Uses `pycairo` for rendering.
+
+Both backends are accessible through the `render` function.
 
 [Material Design Shape System](https://m3.material.io/styles/shape/overview-principles)
 
@@ -19,9 +27,17 @@ Check them out to understand usage and integration.
 
 ## Install
 
-You can easily install it from pip by executing:
+You can install the core library, but you **must** install at least one rendering backend:
+
 ```console
-pip3 install materialshapes --upgrade
+# To use ThorVG (Recommended for performance)
+pip3 install "materialshapes[thorvg]"
+
+# To use Cairo
+pip3 install "materialshapes[cairo]"
+
+# To install both
+pip3 install "materialshapes[all]"
 ```
 
 ## Examples

@@ -27,6 +27,9 @@ Check them out to understand usage and integration.
 
 ## Install
 
+
+**Note**: New thorvg renderer has not been released yet, I will do it soon :)
+
 You can install the core library, but you **must** install at least one rendering backend:
 
 ```console
